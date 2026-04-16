@@ -79,6 +79,16 @@ bash eval.sh beat_block_hammer demo_clean demo_clean 50 0 0
 
 A `33.0%` success rate on `100` evaluation episodes shows that DP learned part of the task from a modest expert dataset, but the policy remains far from robust under unseen instructions. This makes the run a useful baseline and comparison anchor for later RoboTwin experiments.
 
+## Resource-Constrained Notes
+
+This run was carried out on an `RTX 4060 Ti 8GB`, so the stock RoboTwin DP setting had to be adjusted to avoid OOM. Reducing batch size was an engineering necessity rather than an algorithmic change. That distinction matters because the purpose of this run is to document a realistic local baseline, not to present an idealized large-GPU result.
+
+## What This Run Demonstrates
+
+- end-to-end DP preprocessing, training, checkpointing, and evaluation on RoboTwin
+- stable adaptation of the pipeline to consumer-GPU hardware
+- a baseline result that can be compared directly against ACT on the same task and data scale
+
 ## Artifacts
 
 - Raw result file: [results/dp/beat_block_hammer/demo_clean/result.txt](../../results/dp/beat_block_hammer/demo_clean/result.txt)

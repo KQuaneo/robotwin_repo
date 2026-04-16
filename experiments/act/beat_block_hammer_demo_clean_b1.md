@@ -92,6 +92,16 @@ python script/eval_policy.py \
 
 A `32.0%` success rate on `100` evaluation episodes puts ACT very close to the DP baseline on this task and dataset scale. On this machine and data regime, ACT did not clearly outperform DP, but it produced a credible baseline and a useful direct comparison point.
 
+## Resource-Constrained Notes
+
+This ACT run was scoped around the same `RTX 4060 Ti 8GB` limit as the DP baseline. To keep the run stable and to avoid overwriting an earlier ACT directory, training used a dedicated checkpoint folder and `batch_size=1`. The project intent here is to show that the ACT pipeline can be trained, evaluated, and documented cleanly under consumer-GPU limits.
+
+## What This Run Demonstrates
+
+- end-to-end ACT preprocessing, training, checkpointing, and evaluation on RoboTwin
+- machine-safe reproduction of ACT under limited VRAM
+- a directly comparable ACT baseline against the DP run on the same task and data scale
+
 ## Artifacts
 
 - Raw result file: [results/act/beat_block_hammer/demo_clean_50_b1/result.txt](../../results/act/beat_block_hammer/demo_clean_50_b1/result.txt)
