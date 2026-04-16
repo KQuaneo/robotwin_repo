@@ -102,6 +102,11 @@ This ACT run was scoped around the same `RTX 4060 Ti 8GB` limit as the DP baseli
 - machine-safe reproduction of ACT under limited VRAM
 - a directly comparable ACT baseline against the DP run on the same task and data scale
 
+## Evidence
+
+- An ACT train-vs-val loss curve was generated locally during training.
+- Rollout videos were generated during evaluation in the local RoboTwin eval directory recorded below.
+
 ## Artifacts
 
 - Raw result file: [results/act/beat_block_hammer/demo_clean_50_b1/result.txt](../../results/act/beat_block_hammer/demo_clean_50_b1/result.txt)

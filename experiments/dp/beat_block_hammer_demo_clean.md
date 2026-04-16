@@ -89,6 +89,11 @@ This run was carried out on an `RTX 4060 Ti 8GB`, so the stock RoboTwin DP setti
 - stable adaptation of the pipeline to consumer-GPU hardware
 - a baseline result that can be compared directly against ACT on the same task and data scale
 
+## Evidence
+
+- A DP training-loss curve was generated locally from `logs.json.txt`.
+- Rollout videos were generated during evaluation in the local RoboTwin eval directory recorded below.
+
 ## Artifacts
 
 - Raw result file: [results/dp/beat_block_hammer/demo_clean/result.txt](../../results/dp/beat_block_hammer/demo_clean/result.txt)
@@ -98,7 +103,5 @@ This run was carried out on an `RTX 4060 Ti 8GB`, so the stock RoboTwin DP setti
 
 ## Next Work
 
-- Add a training-loss plot
-- Add qualitative rollout media
 - Compare against ACT on the same task and split
 - Repeat with more demonstrations and summarize scaling behavior

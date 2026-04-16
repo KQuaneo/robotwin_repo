@@ -70,6 +70,12 @@ results/
 Detailed comparison:
 [DP vs ACT on `beat_block_hammer`](experiments/comparisons/beat_block_hammer_dp_vs_act.md)
 
+## Evaluation Evidence
+
+- Both baselines were trained end-to-end and evaluated on `100` unseen-instruction episodes.
+- Local training curves were generated for `DP` and `ACT`, and the exact local output directories are recorded in the experiment pages.
+- Rollout videos were also generated locally during evaluation; the corresponding eval-result paths are documented per experiment.
+
 ## Key Observations
 
 - On `beat_block_hammer` with `50` `demo_clean` demonstrations, `DP` and `ACT` ended up very close: `33.0%` vs `32.0%`.
@@ -89,8 +95,6 @@ Due to the 8 GB VRAM limit of the local GPU, this repository currently focuses o
 
 ## Planned Next Upgrades
 
-- add selected rollout GIFs or videos to the experiment pages
-- add training-loss figures directly to the reports
 - expand comparison notes with more qualitative observations
 - add another task or another ACT/DP setting once the current baseline is fully documented
 
