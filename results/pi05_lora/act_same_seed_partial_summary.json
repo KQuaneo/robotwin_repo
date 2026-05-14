@@ -1,0 +1,15 @@
+{
+  "benchmark": "ACT same-seed RoboTwin beat_block_hammer",
+  "status": "paused_partial",
+  "checkpoint": "policy_last.ckpt",
+  "completed_trials": 46,
+  "success": 13,
+  "logged_fail": 20,
+  "timeout_fail": 13,
+  "success_rate_completed": 28.3,
+  "first_seed": 100000,
+  "last_seed": 100096,
+  "remote_summary": "/root/autodl-tmp/robotwin_logs/ACT_same_seed100_saved_partial_summary.json",
+  "remote_results": "/root/autodl-tmp/robotwin_logs/ACT_same_seed100_saved_partial_results.tsv",
+  "note": "Timeout failures are tracked separately because ACT rollout repeatedly stalled in the simulator/runtime stack. The benchmark is resumable from the saved supervisor logs."
+}

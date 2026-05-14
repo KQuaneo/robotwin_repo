@@ -1,44 +1,90 @@
-# RoboTwin Baseline Reproduction on RTX 4060 Ti 8GB
+# RoboTwin Embodied Policy Benchmark and VLA Adaptation
 
-Reproduced and compared RoboTwin manipulation baselines on `beat_block_hammer`, including **Diffusion Policy (DP)** and **Action Chunking Transformer (ACT)**, with reproducible training commands, evaluation records, and result summaries under consumer-GPU constraints.
+This repository documents an end-to-end RoboTwin manipulation project on `beat_block_hammer`: first reproducing **Diffusion Policy (DP)** and **Action Chunking Transformer (ACT)** baselines under consumer-GPU constraints, then adapting the **pi0.5 vision-language-action model** with LoRA and evaluating it against those baselines.
 
-This repository is not meant to claim a new algorithm. Its role is to serve as a **structured embodied-policy experiment project**: training, inference, comparison, and documentation, done in a way that is honest, reproducible, and useful for later extension.
+The goal is not to claim a new algorithm. The goal is to show a credible robotics ML workflow: data preparation, policy training, checkpoint management, rollout evaluation, same-task comparison, robustness testing, and failure analysis.
+
+## Highlights
+
+- Reproduced DP and ACT baselines on an `RTX 4060 Ti 8GB` machine.
+- Fine-tuned `pi05_base_aloha_lora` on 50 RoboTwin demonstrations using a `2x RTX 5090 32GB` cloud instance.
+- Evaluated pi0.5 LoRA checkpoints at 5000 and 8000 training steps.
+- Compared pi0.5 LoRA, DP, and ACT on the same RoboTwin task and seed stream.
+- Added robustness tests for lighting, background/table texture, clutter, and combined randomization.
+- Documented CUDA 12.8, SAPIEN/Vulkan, Torch/JAX, and cuRobo setup issues encountered on RTX 5090 hardware.
 
 ## Project Positioning
 
 The most accurate description of this repo is:
 
-**RoboTwin baseline reproduction and comparison under 8 GB GPU constraints.**
+**RoboTwin embodied-policy reproduction, benchmarking, and VLA adaptation under real GPU constraints.**
 
-The machine used in these experiments has an `RTX 4060 Ti 8GB`, so the repository focuses on baselines that can be run reliably in that setting. Instead of trying to touch many policies superficially, the project currently goes deeper on two representative methods:
+The project has two stages:
 
-- `DP`: diffusion-based action prediction
-- `ACT`: transformer-based action chunking
+- `DP` and `ACT` baseline reproduction on `RTX 4060 Ti 8GB`
+- pi0.5 LoRA adaptation and evaluation on `2x RTX 5090 32GB`
 
-That scope is deliberate. The goal is to produce credible evidence, not a collection of half-finished runs.
+That scope makes the pi0.5 result more meaningful: it is not reported as an isolated success rate, but compared against reproduced baselines on the same task.
 
-## What This Repository Shows
+## Main Results
 
-- end-to-end RoboTwin baseline training and inference
-- reproducible commands and run settings
-- checkpoint and result tracking
-- direct baseline comparison on the same task and data scale
-- practical engineering decisions made under limited VRAM
+### Baseline Reproduction
+
+| Policy | Task | Setting | Checkpoint | Result | Report |
+| --- | --- | --- | --- | --- | --- |
+| `DP` | `beat_block_hammer` | `demo_clean`, 50 demos | `600.ckpt` | `33.0%` | [Report](experiments/dp/beat_block_hammer_demo_clean.md) |
+| `ACT` | `beat_block_hammer` | `demo_clean`, 50 demos | `policy_best.ckpt` | `32.0%` | [Report](experiments/act/beat_block_hammer_demo_clean_b1.md) |
+
+Detailed baseline comparison:
+[DP vs ACT on `beat_block_hammer`](experiments/comparisons/beat_block_hammer_dp_vs_act.md)
+
+### pi0.5 LoRA Adaptation
+
+| checkpoint | instruction split | success | trials | success rate | Report |
+| --- | --- | ---: | ---: | ---: | --- |
+| `checkpoint-5000` | unseen | 34 | 100 | 34.0% | [Report](experiments/pi05_lora/beat_block_hammer_pi05_lora.md) |
+| `checkpoint-8000` | unseen | 45 | 100 | 45.0% | [Report](experiments/pi05_lora/beat_block_hammer_pi05_lora.md) |
+| `checkpoint-5000` | seen | 15 | 50 | 30.0% | [Report](experiments/pi05_lora/beat_block_hammer_pi05_lora.md) |
+| `checkpoint-8000` | seen | 27 | 50 | 54.0% | [Report](experiments/pi05_lora/beat_block_hammer_pi05_lora.md) |
+
+The 8000-step LoRA checkpoint outperformed the 5000-step checkpoint on both seen and unseen instruction splits.
+
+### Same-Seed Policy Benchmark
+
+| Policy | Model / Checkpoint | Success | Trials | Success Rate | Status |
+| --- | --- | ---: | ---: | ---: | --- |
+| pi0.5 LoRA | `checkpoint-8000` | 45 | 100 | 45.0% | complete |
+| Diffusion Policy | `600.ckpt` | 26 | 100 | 26.0% | complete |
+| ACT | `policy_last.ckpt` | 13 | 46 | 28.3% | paused partial |
+
+The same-seed benchmark is documented in:
+[Robustness and Same-Seed Benchmark](experiments/pi05_lora/robustness_and_same_seed_benchmark.md)
+
+### pi0.5 Robustness Snapshot
+
+| Setting | Success | Trials | Success Rate |
+| --- | ---: | ---: | ---: |
+| clean | 45 | 100 | 45.0% |
+| lighting randomization | 25 | 50 | 50.0% |
+| background/table texture randomization | 19 | 50 | 38.0% |
+| clutter randomization | 26 | 50 | 52.0% |
+| background + lighting + clutter | 15 | 50 | 30.0% |
 
 ## Pipeline
 
 ```mermaid
 flowchart LR
-    A[Collected demonstrations<br/>HDF5 / video / instruction files] --> B[Policy-specific preprocessing]
-    B --> C1[DP Zarr dataset]
-    B --> C2[ACT processed episodes]
+    A[50 RoboTwin demonstrations] --> B[Policy-specific preprocessing]
+    B --> C1[DP dataset]
+    B --> C2[ACT episodes]
+    B --> C3[pi0.5 / LeRobot-compatible data]
     C1 --> D1[DP training]
     C2 --> D2[ACT training]
-    D1 --> E1[DP checkpoints]
-    D2 --> E2[ACT checkpoints]
-    E1 --> F[Rollout evaluation]
-    E2 --> F
-    F --> G[Success rate / videos / experiment report]
+    C3 --> D3[pi0.5 LoRA fine-tuning]
+    D1 --> E[Rollout evaluation]
+    D2 --> E
+    D3 --> E
+    E --> F[Success rates, videos, failure analysis, robustness reports]
 ```
 
 ## Repository Structure
@@ -48,56 +94,47 @@ experiments/
   dp/
   act/
   comparisons/
+  pi05_lora/
+docs/
+  pi05_lora/
 results/
   dp/
   act/
+  pi05_lora/
+scripts/
 ```
 
-## Experiment Index
+Important pi0.5 documents:
 
-| Policy | Task | Setting | Checkpoint | Result | Report |
-| --- | --- | --- | --- | --- | --- |
-| `DP` | `beat_block_hammer` | `demo_clean`, 50 demos | `600.ckpt` | `33.0%` | [Report](experiments/dp/beat_block_hammer_demo_clean.md) |
-| `ACT` | `beat_block_hammer` | `demo_clean`, 50 demos | `policy_best.ckpt` | `32.0%` | [Report](experiments/act/beat_block_hammer_demo_clean_b1.md) |
+- [pi0.5 LoRA experiment report](experiments/pi05_lora/beat_block_hammer_pi05_lora.md)
+- [Robustness and same-seed benchmark](experiments/pi05_lora/robustness_and_same_seed_benchmark.md)
+- [pi0.5 reproduction notes](docs/pi05_lora/reproduction.md)
+- [RTX 5090 runbook](docs/pi05_lora/robotwin_pi05_5090_32g_runbook.md)
+- [Failure analysis notes](docs/pi05_lora/failure_analysis.md)
+- [Resume material](docs/pi05_lora/resume_material.md)
 
-## Current Comparison
+## Evidence
 
-| Policy | Success Rate | Machine Adjustment | Main Note |
-| --- | --- | --- | --- |
-| `DP` | `33.0%` | reduced batch size to `8` | fit diffusion baseline to 8 GB VRAM |
-| `ACT` | `32.0%` | reduced batch size to `1` | stable ACT baseline on the same machine |
-
-Detailed comparison:
-[DP vs ACT on `beat_block_hammer`](experiments/comparisons/beat_block_hammer_dp_vs_act.md)
-
-## Evaluation Evidence
-
-- Both baselines were trained end-to-end and evaluated on `100` unseen-instruction episodes.
-- Local training curves were generated for `DP` and `ACT`, and the exact local output directories are recorded in the experiment pages.
-- Rollout videos were also generated locally during evaluation; the corresponding eval-result paths are documented per experiment.
+- DP and ACT were trained end-to-end and evaluated on `100` unseen-instruction episodes.
+- pi0.5 LoRA was trained to `8000` steps and evaluated across seen/unseen instruction splits.
+- Robustness evaluations changed lighting, background/table texture, clutter, and combined randomization.
+- Rollout videos and failure manifests were generated locally; large videos, raw datasets, checkpoints, credentials, and model weights are intentionally excluded from this public repo.
 
 ## Key Observations
 
-- On `beat_block_hammer` with `50` `demo_clean` demonstrations, `DP` and `ACT` ended up very close: `33.0%` vs `32.0%`.
-- The result gap is small enough that this task and data scale should be treated as a **baseline comparison setting**, not as proof that one policy clearly dominates the other.
-- Under `RTX 4060 Ti 8GB` constraints, the main engineering challenge was not collecting data but fitting training and evaluation safely into available VRAM.
-- In this setup, careful scope control was more valuable than trying to add more policies without stable runs.
+- DP and ACT were close under the original 8 GB baseline setting: `33.0%` vs `32.0%`.
+- pi0.5 LoRA reached `45.0%` on the same task under the same primary seed stream, outperforming the reproduced DP baseline.
+- The jump from `checkpoint-5000` to `checkpoint-8000` shows that the LoRA run was still benefiting from additional optimization.
+- Background/table texture randomization was more damaging than lighting or clutter alone in this run.
+- ACT evaluation on the RTX 5090 setup needed watchdog logging because some rollouts stalled; the partial result is reported honestly rather than silently discarded.
 
-## Why Only ACT and DP Right Now
+## What This Project Demonstrates
 
-Due to the 8 GB VRAM limit of the local GPU, this repository currently focuses on `ACT` and `DP` as **reproducible and representative RoboTwin baselines**. The decision was to make a few baselines solid and comparable rather than expand to more policies that could not be trained or evaluated reliably on this hardware.
-
-## What I Learned
-
-- Reproduction quality depends as much on logging, checkpoint organization, and evaluation discipline as it does on launching training itself.
-- Consumer-GPU constraints materially shape experiment design. Batch size, checkpoint layout, and evaluation wrappers become part of the project rather than invisible details.
-- A public baseline repo becomes much stronger when it records not only the metric, but also the setup, scope boundary, and reasons behind engineering tradeoffs.
-
-## Planned Next Upgrades
-
-- expand comparison notes with more qualitative observations
-- add another task or another ACT/DP setting once the current baseline is fully documented
+- End-to-end robotics ML experiment execution rather than only model training.
+- Reproducible evaluation discipline: fixed seeds, checkpoint comparison, seen/unseen instruction splits, and explicit partial-run accounting.
+- Practical GPU engineering across limited local hardware and larger cloud hardware.
+- Honest benchmark reporting with raw-result summaries and caveats instead of only best-case metrics.
 
 ## Notes
 
-This repository should be read as a growing **experiment project** rather than a final benchmark submission. The top-level README acts as an index; detailed run descriptions live under `experiments/`, and raw outputs are grouped under `results/`.
+This repository should be read as a growing public experiment archive rather than a final benchmark submission. It intentionally excludes raw demonstrations, model weights, large rollout videos, cloud cache directories, and credentials.

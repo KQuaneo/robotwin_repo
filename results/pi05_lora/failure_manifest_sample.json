@@ -1,0 +1,50 @@
+{
+  "summary": {
+    "ckpt8000_unseen_100": {
+      "success": 45,
+      "total": 100,
+      "rate": 45.0
+    },
+    "ckpt5000_unseen_100": {
+      "success": 34,
+      "total": 100,
+      "rate": 34.0
+    },
+    "ckpt8000_seen_50": {
+      "success": 27,
+      "total": 50,
+      "rate": 54.0
+    },
+    "ckpt5000_seen_50": {
+      "success": 15,
+      "total": 50,
+      "rate": 30.0
+    }
+  },
+  "sample_failure_videos": [
+    {
+      "split": "ckpt8000_unseen_first50",
+      "episode": 1,
+      "seed": 100002,
+      "video": "/root/autodl-tmp/robotwin/eval_result/beat_block_hammer/pi05/demo_clean/beat_block_hammer_demo_clean_50_lora_ckpt8000_seed0_first50/2026-05-13 14:55:17/episode1.mp4"
+    },
+    {
+      "split": "ckpt8000_unseen_cont50",
+      "episode": 1,
+      "seed": 100068,
+      "video": "/root/autodl-tmp/robotwin/eval_result/beat_block_hammer/pi05/demo_clean/beat_block_hammer_demo_clean_50_lora_ckpt8000_seed0_cont50/2026-05-13 14:55:17/episode1.mp4"
+    },
+    {
+      "split": "ckpt5000_unseen_resume33",
+      "episode": 0,
+      "seed": 100021,
+      "video": "/root/autodl-tmp/robotwin/eval_result/beat_block_hammer/pi05/demo_clean/beat_block_hammer_demo_clean_50_lora_ckpt5000_unseen_first50_resume33_from100021/2026-05-13 16:18:28/episode0.mp4"
+    },
+    {
+      "split": "ckpt8000_seen50",
+      "episode": 0,
+      "seed": 100000,
+      "video": "/root/autodl-tmp/robotwin/eval_result/beat_block_hammer/pi05/demo_clean/beat_block_hammer_demo_clean_50_lora_ckpt8000_seen50/2026-05-13 16:27:10/episode0.mp4"
+    }
+  ]
+}
